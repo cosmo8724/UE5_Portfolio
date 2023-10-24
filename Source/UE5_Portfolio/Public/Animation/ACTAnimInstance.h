@@ -29,6 +29,9 @@ protected:
 	TObjectPtr<class UCharacterMovementComponent> CharacterMovement;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	float MovingThreshould{ 3.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	FVector Velocity;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
@@ -38,5 +41,11 @@ protected:
 	FRotator Rotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	FRotator AimRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	float Direction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	uint8 bIsIdle : 1;
 };

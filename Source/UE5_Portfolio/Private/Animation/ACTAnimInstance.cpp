@@ -2,8 +2,10 @@
 
 
 #include "Animation/ACTAnimInstance.h"
+
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "KismetAnimationLibrary.h"
 
 UACTAnimInstance::UACTAnimInstance()
 {
@@ -16,7 +18,6 @@ void UACTAnimInstance::NativeInitializeAnimation()
 	Owner = Cast<ACharacter>(GetOwningActor());
 	if (Owner) {
 		CharacterMovement = Owner->GetCharacterMovement();
-		ensure(CharacterMovement);
 	}
 }
 
@@ -27,7 +28,9 @@ void UACTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (CharacterMovement) {
 		Velocity = CharacterMovement->Velocity;
 		GroundSpeed = Velocity.Size2D();
+		bIsIdle = GroundSpeed < MovingThreshould;
 		Rotation = Owner->GetActorRotation();
-		Direction = CalculateDirection(Velocity, Rotation);
+		AimRotation = Owner->GetBaseAimRotation();
+		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, Rotation);
 	}
 }

@@ -21,12 +21,26 @@ public:
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	const bool IsArmed() const { return bIsArmed; }
+
 protected:
 	virtual void BeginPlay() override;
 
 protected:	/* [Func] EnhancedInput */
 	void Move(const FInputActionValue& InValue);
 	void Look(const FInputActionValue& InValue);
+	void Armed();
+
+protected:	/* [Func] Animation */
+	void PlayIdleSwapMontage();
+
+private:	/* [Func] Animation Notifies */
+	UFUNCTION(BlueprintCallable)
+	void IdleToCombatIdle();
+
+	UFUNCTION(BlueprintCallable)
+	void CombatIdleToIdle();
 
 protected:	/* Components */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -34,6 +48,18 @@ protected:	/* Components */
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> PlayerCamera;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
+	TSubclassOf<class AACTWeaponBase> MainWeaponClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	TObjectPtr<class AACTWeaponBase> MainWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
+	TSubclassOf<class AACTWeaponBase> SubWeaponClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	TObjectPtr<class AACTWeaponBase> SubWeapon;
 
 protected:	/* EnhancedInput */
 	UPROPERTY(EditAnywhere, Category = Input)
@@ -47,4 +73,15 @@ protected:	/* EnhancedInput */
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	TObjectPtr<class UInputAction> JumpAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	TObjectPtr<class UInputAction> ArmedAction;
+
+protected:	/* Animation */
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	TObjectPtr<class UAnimMontage> IdleSwapMontage;
+
+protected:	/* Attributes */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	uint8 bIsArmed : 1;
 };

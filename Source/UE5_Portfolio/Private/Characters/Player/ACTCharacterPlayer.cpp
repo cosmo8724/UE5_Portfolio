@@ -3,6 +3,8 @@
 
 #include "Characters/Player/ACTCharacterPlayer.h"
 
+#include "Weapons/ACTWeaponBase.h"
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
@@ -28,6 +30,15 @@ void AACTCharacterPlayer::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	if (MainWeaponClass) {
+		MainWeapon = GetWorld()->SpawnActor<AACTWeaponBase>(MainWeaponClass);
+		MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules{ EAttachmentRule::SnapToTarget, true }, TEXT("KatanaSheathHandle"));
+	}
+	if (SubWeaponClass) {
+		SubWeapon = GetWorld()->SpawnActor<AACTWeaponBase>(SubWeaponClass);
+		SubWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules{ EAttachmentRule::SnapToTarget, true }, TEXT("KatanaSheath"));
+	}
 }
 
 void AACTCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -38,6 +49,7 @@ void AACTCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Look);
 		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Jump);
+		EnhancedInputComponent->BindAction(ArmedAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Armed);
 	}
 }
 
@@ -62,4 +74,30 @@ void AACTCharacterPlayer::Look(const FInputActionValue& InValue)
 
 	AddControllerYawInput(Value.X);
 	AddControllerPitchInput(Value.Y);
+}
+
+void AACTCharacterPlayer::Armed()
+{
+	PlayIdleSwapMontage();
+}
+
+void AACTCharacterPlayer::PlayIdleSwapMontage()
+{
+	UAnimInstance* AnimInstance{ GetMesh()->GetAnimInstance() };
+	AnimInstance->Montage_Play(IdleSwapMontage);
+	
+	FName SectionName{ IdleSwapMontage->GetSectionName(bIsArmed) };
+	AnimInstance->Montage_JumpToSection(SectionName, IdleSwapMontage);
+}
+
+void AACTCharacterPlayer::IdleToCombatIdle()
+{
+	MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules{ EAttachmentRule::SnapToTarget, true }, TEXT("KatanaWeapon"));
+	bIsArmed = true;
+}
+
+void AACTCharacterPlayer::CombatIdleToIdle()
+{
+	MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules{ EAttachmentRule::SnapToTarget, true }, TEXT("KatanaSheathHandle"));
+	bIsArmed = false;
 }
