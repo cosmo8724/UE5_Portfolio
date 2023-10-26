@@ -10,9 +10,12 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AACTCharacterPlayer::AACTCharacterPlayer()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->bUsePawnControlRotation = true;
@@ -42,6 +45,11 @@ void AACTCharacterPlayer::BeginPlay()
 	}
 }
 
+void AACTCharacterPlayer::Tick(float DeltaTime)
+{
+
+}
+
 void AACTCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -50,6 +58,7 @@ void AACTCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Move);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AACTCharacterPlayer::ResetMove);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Completed, this, &AACTCharacterPlayer::ReleaseLook);
 		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Jump);
 		EnhancedInputComponent->BindAction(ArmedAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Armed);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::MovementStateToRun);
@@ -64,7 +73,7 @@ void AACTCharacterPlayer::Move(const FInputActionValue& InValue)
 	const FInputActionValue::Axis2D Value{ InValue.Get<FInputActionValue::Axis2D>() * CurrentMovementScale };
 
 	const FRotator ControlRotation{ GetControlRotation() };
-	const FRotator YawRotation{ 0.f, ControlRotation.Yaw, 0.f };
+	const FRotator YawRotation{ 0.0, ControlRotation.Yaw, 0.0 };
 	const FRotationMatrix YawMatrix{ YawRotation };
 
 	const FVector Forward{ YawMatrix.GetUnitAxis(EAxis::X) };
@@ -94,6 +103,42 @@ void AACTCharacterPlayer::Look(const FInputActionValue& InValue)
 
 	AddControllerYawInput(Value.X);
 	AddControllerPitchInput(Value.Y);
+
+	GetWorldTimerManager().ClearTimer(TurnInPlaceTimerHandle);
+}
+
+void AACTCharacterPlayer::ReleaseLook(const FInputActionValue& InValue)
+{
+	const FRotator ActorRotation{ GetActorRotation() };
+	/*const FRotator ActorYawRotation{ 0.0, ActorRotation.Yaw, 0.0 };
+	const FRotationMatrix ActorYawMatrix{ ActorYawRotation };
+	const FVector ActorYawForward{ ActorYawMatrix.GetUnitAxis(EAxis::X) };*/
+
+	const FRotator AimRotation{ GetBaseAimRotation() };
+	/*const FRotator AimYawRotation{ 0.0, AimRotation.Yaw, 0.0 };
+	const FRotationMatrix AimYawMatrix{ AimYawRotation };
+	const FVector AimYawForward{ AimYawMatrix.GetUnitAxis(EAxis::X) };*/
+
+	double Angle{ UKismetMathLibrary::NormalizedDeltaRotator(AimRotation, ActorRotation).Yaw };
+	/*double Angle{ UKismetMathLibrary::DegAcos(FVector::DotProduct(ActorYawForward, AimYawForward)) };
+	if (FVector::CrossProduct(ActorYawForward, AimYawForward).Z < 0.0) {
+		Angle *= -1.0;
+	}*/
+	GEngine->AddOnScreenDebugMessage(10, -1.f, FColor::Green, FString::FromInt(StaticCast<int32>(Angle)));
+
+	if (FMath::Abs(Angle) > 60.0) {
+		GetWorldTimerManager().ClearTimer(TurnInPlaceTimerHandle);
+		GetWorldTimerManager().SetTimer(TurnInPlaceTimerHandle, FTimerDelegate::CreateLambda(
+			[&, Angle, ActorRotation, AimRotation]() {
+				if (UACTAnimInstancePlayer * AnimInstance{ Cast<UACTAnimInstancePlayer>(GetMesh()->GetAnimInstance()) }) {
+					AnimInstance->SetTurnInPlace(Angle, ActorRotation.Yaw, AimRotation.Yaw);
+				}
+			}
+		), TurnInPlaceTime, false);
+	}
+	else {
+		GetWorldTimerManager().ClearTimer(TurnInPlaceTimerHandle);
+	}
 }
 
 void AACTCharacterPlayer::Armed()

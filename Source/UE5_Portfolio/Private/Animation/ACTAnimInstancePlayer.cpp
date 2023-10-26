@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimNode_StateMachine.h"
 #include "KismetAnimationLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UACTAnimInstancePlayer::UACTAnimInstancePlayer()
 {
@@ -16,6 +17,30 @@ UACTAnimInstancePlayer::UACTAnimInstancePlayer()
 void UACTAnimInstancePlayer::ExecuteOnMoveInputValueChanged(float NewInputX, float NewInputY)
 {
 	OnMoveInputValueChanged.ExecuteIfBound(NewInputX, NewInputY);
+}
+
+void UACTAnimInstancePlayer::SetTurnInPlace(double InTurnInPlaceAngle, double InCurrentYaw, double InTargetYaw)
+{
+	bIsNeedTurnInPlace = true;
+	TurnInPlaceAngle = StaticCast<float>(InTurnInPlaceAngle);
+	CurrentYaw = InCurrentYaw;
+	TargetYaw = InTargetYaw;
+}
+
+void UACTAnimInstancePlayer::ExecuteTurnInPlace()
+{
+	bIsNeedTurnInPlace = false;
+
+	double DeltaRotate{ UKismetMathLibrary::Ease(CurrentYaw, TargetYaw, GetCurveValue(TEXT("RotationYaw")), EEasingFunc::Linear) };
+	GEngine->AddOnScreenDebugMessage(11, 3.f, FColor::White, FString::Printf(TEXT("CurveValue : %f"), GetCurveValue(TEXT("RotationYaw"))));
+
+	Player->SetActorRotation(FRotator{ 0.0, DeltaRotate, 0.0 });
+}
+
+void UACTAnimInstancePlayer::ResetTurnInPlace()
+{
+	//TurnInPlaceAngle = 0.f;
+	//CurrentYaw = TargetYaw;
 }
 
 void UACTAnimInstancePlayer::NativeInitializeAnimation()

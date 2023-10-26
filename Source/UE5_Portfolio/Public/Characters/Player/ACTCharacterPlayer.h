@@ -20,6 +20,7 @@ public:
 	AACTCharacterPlayer();
 
 public:
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
@@ -32,6 +33,7 @@ protected:	/* [Func] EnhancedInput */
 	void Move(const FInputActionValue& InValue);
 	void ResetMove(const FInputActionValue& InValue);
 	void Look(const FInputActionValue& InValue);
+	void ReleaseLook(const FInputActionValue& InValue);
 	void Armed();
 	void MovementStateToRun();
 	void MovementStateToWalk();
@@ -91,6 +93,11 @@ protected:	/* Animation */
 protected:	/* Attributes */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	uint8 bIsArmed : 1;
+
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float TurnInPlaceTime{ 3.f };
+
+	FTimerHandle TurnInPlaceTimerHandle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	EMovementState MovementState{ EMovementState::WALK };

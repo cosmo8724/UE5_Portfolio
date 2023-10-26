@@ -31,29 +31,29 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	float MovingThreshould{ 3.f };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	FVector Velocity;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	float GroundSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Rotation)
 	FRotator Rotation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Rotation)
 	FRotator ControlRotation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Rotation)
 	FRotator AimRotation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	float Direction;
 
 	float AbsoulteDirection;
 
 	uint8 bIsMovementStop;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StateProperties)
 	uint8 bIsIdle : 1;
 
 	UPROPERTY(EditDefaultsOnly, Category = StateMachine)

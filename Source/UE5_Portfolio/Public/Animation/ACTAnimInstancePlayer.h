@@ -21,6 +21,13 @@ public:
 
 public:
 	void ExecuteOnMoveInputValueChanged(float NewInputX, float NewInputY);
+	void SetTurnInPlace(double InTurnInPlaceAngle, double InCurrentYaw, double InTargetYaw);
+
+	UFUNCTION(BlueprintCallable)
+	void ExecuteTurnInPlace();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetTurnInPlace();
 
 protected:
 	virtual void NativeInitializeAnimation() override;
@@ -38,16 +45,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	TObjectPtr<class AACTCharacterPlayer> Player;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StateProperties)
 	uint8 bIsArmed : 1;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = TurnInPlace)
+	uint8 bIsNeedTurnInPlace : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = TurnInPlace)
+	float TurnInPlaceAngle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = TurnInPlace)
+	float CurrentYaw;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = TurnInPlace)
+	float TargetYaw;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	float InputX;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	float InputY;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	float RootMotionSpeed;
 
 private:
