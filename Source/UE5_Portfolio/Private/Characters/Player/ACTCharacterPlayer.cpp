@@ -4,6 +4,7 @@
 #include "Characters/Player/ACTCharacterPlayer.h"
 
 #include "Weapons/ACTWeaponBase.h"
+#include "Animation/ACTAnimInstancePlayer.h"
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -47,15 +48,20 @@ void AACTCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	if (UEnhancedInputComponent* EnhancedInputComponent{ CastChecked<UEnhancedInputComponent>(PlayerInputComponent) }) {
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AACTCharacterPlayer::ResetMove);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Look);
 		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Jump);
 		EnhancedInputComponent->BindAction(ArmedAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::Armed);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AACTCharacterPlayer::MovementStateToRun);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AACTCharacterPlayer::MovementStateToWalk);
 	}
 }
 
 void AACTCharacterPlayer::Move(const FInputActionValue& InValue)
 {
-	const FInputActionValue::Axis2D Value{ InValue.Get<FInputActionValue::Axis2D>() };
+	const float TargetMovementScale{ StaticCast<float>(MovementState) + 1.f };
+	CurrentMovementScale = FMath::Lerp(CurrentMovementScale, TargetMovementScale, 0.05f);
+	const FInputActionValue::Axis2D Value{ InValue.Get<FInputActionValue::Axis2D>() * CurrentMovementScale };
 
 	const FRotator ControlRotation{ GetControlRotation() };
 	const FRotator YawRotation{ 0.f, ControlRotation.Yaw, 0.f };
@@ -66,6 +72,20 @@ void AACTCharacterPlayer::Move(const FInputActionValue& InValue)
 
 	AddMovementInput(Forward, Value.X);
 	AddMovementInput(Right, Value.Y);
+
+	if (UACTAnimInstancePlayer* AnimInstancePlayer{ Cast<UACTAnimInstancePlayer>(GetMesh()->GetAnimInstance()) }) {
+		AnimInstancePlayer->ExecuteOnMoveInputValueChanged(Value.X, Value.Y);
+	}
+}
+
+void AACTCharacterPlayer::ResetMove(const FInputActionValue& InValue)
+{
+	const FInputActionValue::Axis2D Value{ InValue.Get<FInputActionValue::Axis2D>() };
+	CurrentMovementScale = 0.f;
+
+	if (UACTAnimInstancePlayer * AnimInstancePlayer{ Cast<UACTAnimInstancePlayer>(GetMesh()->GetAnimInstance()) }) {
+		AnimInstancePlayer->ExecuteOnMoveInputValueChanged(Value.X, Value.Y);
+	}
 }
 
 void AACTCharacterPlayer::Look(const FInputActionValue& InValue)
@@ -79,6 +99,16 @@ void AACTCharacterPlayer::Look(const FInputActionValue& InValue)
 void AACTCharacterPlayer::Armed()
 {
 	PlayIdleSwapMontage();
+}
+
+void AACTCharacterPlayer::MovementStateToRun()
+{
+	MovementState = EMovementState::RUN;
+}
+
+void AACTCharacterPlayer::MovementStateToWalk()
+{
+	MovementState = EMovementState::WALK;
 }
 
 void AACTCharacterPlayer::PlayIdleSwapMontage()

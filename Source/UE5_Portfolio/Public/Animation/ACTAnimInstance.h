@@ -41,11 +41,24 @@ protected:
 	FRotator Rotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	FRotator ControlRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	FRotator AimRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	float Direction;
 
+	float AbsoulteDirection;
+
+	uint8 bIsMovementStop;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	uint8 bIsIdle : 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = StateMachine)
+	FName LocomotionStateMachineName;
+
+	UPROPERTY(EditDefaultsOnly, Category = StateMachine)
+	FName CombatLocomotionStateMachineName;
 };

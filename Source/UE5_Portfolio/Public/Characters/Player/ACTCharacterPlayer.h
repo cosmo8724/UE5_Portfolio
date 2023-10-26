@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/ACTCharacterBase.h"
+#include "Characters/ACTCharacterTypes.h"
 #include "InputActionValue.h"
 #include "ACTCharacterPlayer.generated.h"
 
@@ -29,8 +30,11 @@ protected:
 
 protected:	/* [Func] EnhancedInput */
 	void Move(const FInputActionValue& InValue);
+	void ResetMove(const FInputActionValue& InValue);
 	void Look(const FInputActionValue& InValue);
 	void Armed();
+	void MovementStateToRun();
+	void MovementStateToWalk();
 
 protected:	/* [Func] Animation */
 	void PlayIdleSwapMontage();
@@ -77,6 +81,9 @@ protected:	/* EnhancedInput */
 	UPROPERTY(EditAnywhere, Category = Input)
 	TObjectPtr<class UInputAction> ArmedAction;
 
+	UPROPERTY(EditAnywhere, Category = Input)
+	TObjectPtr<class UInputAction> RunAction;
+
 protected:	/* Animation */
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
 	TObjectPtr<class UAnimMontage> IdleSwapMontage;
@@ -84,4 +91,10 @@ protected:	/* Animation */
 protected:	/* Attributes */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	uint8 bIsArmed : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	EMovementState MovementState{ EMovementState::WALK };
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	float CurrentMovementScale;
 };
