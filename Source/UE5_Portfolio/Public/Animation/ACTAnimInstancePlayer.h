@@ -21,7 +21,7 @@ public:
 
 public:
 	void ExecuteOnMoveInputValueChanged(float NewInputX, float NewInputY);
-	void SetTurnInPlace(double InTurnInPlaceAngle, double InCurrentYaw, double InTargetYaw);
+	void SetTurnInPlace(double InTurnInPlaceAngle);
 
 	UFUNCTION(BlueprintCallable)
 	void ExecuteTurnInPlace();

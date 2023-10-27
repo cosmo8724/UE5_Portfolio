@@ -124,14 +124,13 @@ void AACTCharacterPlayer::ReleaseLook(const FInputActionValue& InValue)
 	if (FVector::CrossProduct(ActorYawForward, AimYawForward).Z < 0.0) {
 		Angle *= -1.0;
 	}*/
-	GEngine->AddOnScreenDebugMessage(10, -1.f, FColor::Green, FString::FromInt(StaticCast<int32>(Angle)));
 
 	if (FMath::Abs(Angle) > 60.0) {
 		GetWorldTimerManager().ClearTimer(TurnInPlaceTimerHandle);
 		GetWorldTimerManager().SetTimer(TurnInPlaceTimerHandle, FTimerDelegate::CreateLambda(
-			[&, Angle, ActorRotation, AimRotation]() {
+			[&, Angle]() {
 				if (UACTAnimInstancePlayer * AnimInstance{ Cast<UACTAnimInstancePlayer>(GetMesh()->GetAnimInstance()) }) {
-					AnimInstance->SetTurnInPlace(Angle, ActorRotation.Yaw, AimRotation.Yaw);
+					AnimInstance->SetTurnInPlace(Angle);
 				}
 			}
 		), TurnInPlaceTime, false);

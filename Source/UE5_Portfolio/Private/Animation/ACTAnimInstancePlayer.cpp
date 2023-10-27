@@ -19,12 +19,12 @@ void UACTAnimInstancePlayer::ExecuteOnMoveInputValueChanged(float NewInputX, flo
 	OnMoveInputValueChanged.ExecuteIfBound(NewInputX, NewInputY);
 }
 
-void UACTAnimInstancePlayer::SetTurnInPlace(double InTurnInPlaceAngle, double InCurrentYaw, double InTargetYaw)
+void UACTAnimInstancePlayer::SetTurnInPlace(double InTurnInPlaceAngle)
 {
 	bIsNeedTurnInPlace = true;
 	TurnInPlaceAngle = StaticCast<float>(InTurnInPlaceAngle);
-	CurrentYaw = InCurrentYaw;
-	TargetYaw = InTargetYaw;
+	CurrentYaw = Player->GetActorRotation().Yaw;
+	TargetYaw = CurrentYaw + TurnInPlaceAngle;
 }
 
 void UACTAnimInstancePlayer::ExecuteTurnInPlace()
@@ -75,7 +75,7 @@ void UACTAnimInstancePlayer::NativeUpdateAnimation(float DeltaSeconds)
 		bIsIdle = InputX == 0.f && InputY == 0.f;
 		bIsArmed = Player->IsArmed();
 
-		if (GroundSpeed > 10.f) {
+		if (GroundSpeed > 10.f && !bIsMovementStop) {
 			FRotator InterpolatedRotation{ FMath::RInterpTo(Rotation, ControlRotation, DeltaSeconds, 5.f) };
 			InterpolatedRotation.Roll = InterpolatedRotation.Pitch = 0.f;
 			Owner->SetActorRotation(InterpolatedRotation);
